@@ -6,69 +6,133 @@
 <title>PDF Read Aloud</title>
 <meta name="description" content="Upload a PDF and it reads the whole document aloud to you, at a normal pace, right in your browser. Free, no sign-up, nothing uploaded.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;800&family=Literata:opsz,wght@7..72,400;7..72,500&display=swap" rel="stylesheet">
 <style>
-/* VOICE: calm, friendly reading tool
-   IDEA: a reading desk where the page lights up line by line as it is read
-   PICTURE: the open page itself, with the sentence being spoken highlighted
-   COLOUR and TYPE: pale pink ground, ink, teal controls, claret highlight; Libre Franklin
-   LAYOUT: title, upload, then the player bar and the page being read */
+/* VOICE: warm, calm listening tool
+   IDEA: a reading room: a page on the desk and the sound coming off it
+   PICTURE: hero illustration of a document sending out sound waves to headphones; the paper page lights up as it is read
+   COLOUR and TYPE: deep teal hero, peach ground, claret highlight; Libre Franklin for UI, Literata for the reading page
+   LAYOUT: full-width hero with art right, upload card overlapping it, sticky player, paper page; stacks on phones */
 :root{color-scheme:light dark;
-  --bg:light-dark(#ffe3dc,#1c1512);--ink:light-dark(#1a1817,#f3e9e4);--mute:light-dark(#5e5450,#b9aca6);
-  --card:light-dark(#fffaf7,#261d19);--line:light-dark(#efcfc5,#3c2e28);--teal:light-dark(#0d7680,#3fb6bf);
-  --tealink:light-dark(#fff,#071a1c);--claret:light-dark(#990f3d,#ff7aa3);--soft:light-dark(#fdeee8,#2f2420);
-  --hi:light-dark(#ffd3c4,#5a2a36)}
+  --bg:light-dark(#fbe9e1,#17110f);--ink:light-dark(#1a1817,#f3e9e4);--mute:light-dark(#62574f,#b9aca6);
+  --card:light-dark(#fffdfb,#241b18);--line:light-dark(#f0d6cb,#3a2c26);--teal:light-dark(#0d7680,#3fb6bf);
+  --tealink:light-dark(#fff,#071a1c);--claret:light-dark(#990f3d,#ff7aa3);--soft:light-dark(#fdf1ec,#2c221e);
+  --hi:light-dark(#ffd6c7,#5a2a36);--deep:light-dark(#0b3f45,#0a2a2e);--deep2:light-dark(#0d7680,#11545b);
+  --peach:#ffb59a;--shadow:light-dark(0 18px 40px -18px rgba(90,30,20,.35),0 18px 40px -18px rgba(0,0,0,.7))}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Libre Franklin",system-ui,sans-serif;overflow-x:clip}
+body{margin:0;color:var(--ink);font:16px/1.55 "Libre Franklin",system-ui,sans-serif;overflow-x:clip;
+  background:
+   radial-gradient(1200px 600px at 100% 30%,light-dark(#ffd9c9,#2a1a16) 0,transparent 60%),
+   radial-gradient(900px 500px at 0% 80%,light-dark(#ffe9d6,#1f1714) 0,transparent 60%),
+   radial-gradient(circle at 1px 1px,light-dark(rgba(153,15,61,.08),rgba(255,255,255,.04)) 1px,transparent 0) 0 0/22px 22px,
+   var(--bg)}
 .band{padding:clamp(20px,3vw,40px) max(5vw,16px)}
-.wrap{max-width:960px;margin:0 auto}
-h1{font-weight:800;font-size:clamp(32px,5vw,46px);line-height:1.05;margin:0 0 8px;text-wrap:balance}
-.lede{margin:0;color:var(--mute);max-width:60ch}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
-.drop{position:relative;display:flex;align-items:center;gap:18px;border:2px dashed var(--teal);border-radius:12px;padding:18px;cursor:pointer;background:var(--soft)}
-.drop.over{background:color-mix(in srgb,var(--teal) 14%,var(--soft))}
+.wrap{max-width:1000px;margin:0 auto}
+.hero{position:relative;overflow:hidden;color:#fff;
+  background:radial-gradient(700px 380px at 85% 40%,rgba(255,181,154,.28),transparent 70%),linear-gradient(135deg,var(--deep) 0%,var(--deep2) 100%);
+  padding:clamp(32px,5vw,64px) max(5vw,16px) clamp(84px,9vw,120px)}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:60px;background:var(--bg);clip-path:ellipse(70% 100% at 50% 100%)}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:24px;align-items:center;position:relative;z-index:1}
+.kicker{display:inline-flex;gap:8px;align-items:center;font-size:14px;font-weight:600;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);padding:6px 12px;border-radius:99px;margin-bottom:14px}
+.kicker i{width:8px;height:8px;border-radius:50%;background:var(--peach)}
+h1{font-weight:800;font-size:clamp(36px,5.6vw,56px);line-height:1.03;margin:0 0 12px;text-wrap:balance}
+.lede{margin:0;color:rgba(255,255,255,.85);max-width:46ch;font-size:17px}
+.art{width:100%;height:auto;max-height:300px}
+.wave{animation:pulse 2.4s ease-out infinite;transform-origin:150px 150px}
+.wave.w2{animation-delay:.8s}.wave.w3{animation-delay:1.6s}
+@keyframes pulse{0%{opacity:0;transform:scale(.85)}30%{opacity:.9}100%{opacity:0;transform:scale(1.15)}}
+@media(prefers-reduced-motion:reduce){.wave,.eq span{animation:none!important}}
+@media(max-width:700px){.hero .wrap{grid-template-columns:minmax(0,1fr)}.art{max-height:200px}}
+main{margin-top:clamp(-96px,-7vw,-64px);position:relative;z-index:2}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow)}
+.drop{position:relative;display:flex;align-items:center;gap:18px;cursor:pointer;border:2px dashed transparent;background:linear-gradient(var(--card),var(--card)) padding-box,linear-gradient(135deg,var(--teal),var(--claret)) border-box;transition:transform .2s}
+.drop:hover{transform:translateY(-2px)}
+.drop.over{background:linear-gradient(var(--soft),var(--soft)) padding-box,linear-gradient(135deg,var(--teal),var(--claret)) border-box}
 .drop:focus-within{outline:3px solid var(--teal);outline-offset:3px}
 .drop input{position:absolute;opacity:0;width:1px;height:1px}
 .drop svg{width:56px;height:68px;flex:none}
-.drop b{display:block;font-size:18px}
+.drop b{display:block;font-size:19px}
 .drop span{color:var(--mute);font-size:14px}
-.player{position:sticky;top:0;z-index:5;margin-top:16px}
+.cta{margin-left:auto;flex:none;background:linear-gradient(135deg,var(--teal),var(--deep2));color:#fff;font-weight:600;border-radius:12px;padding:12px 18px}
+@media(max-width:600px){.cta{display:none}}
+.player{position:sticky;top:8px;z-index:5;margin-top:16px;backdrop-filter:blur(8px);background:color-mix(in srgb,var(--card) 92%,transparent)}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-button,select{font:inherit;font-size:16px;min-height:44px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:0 14px}
-button{font-weight:600;cursor:pointer}
+button,select{font:inherit;font-size:16px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:0 14px}
+button{font-weight:600;cursor:pointer;transition:background .15s,transform .1s}
+button:hover:not(:disabled){background:var(--soft)}
+button:active:not(:disabled){transform:scale(.97)}
 button:disabled{opacity:.45;cursor:not-allowed}
 button:focus-visible,select:focus{outline:3px solid var(--teal);outline-offset:2px}
-.play{background:var(--teal);color:var(--tealink);border-color:var(--teal);min-width:120px;font-size:17px}
+.play{background:linear-gradient(135deg,var(--teal),var(--deep2));color:#fff;border:0;min-width:128px;font-size:17px;box-shadow:0 8px 18px -8px var(--teal)}
+.play:hover:not(:disabled){background:linear-gradient(135deg,var(--deep2),var(--teal))}
 .ico{width:48px;padding:0;display:inline-grid;place-items:center}
 .ico svg{width:20px;height:20px;fill:currentColor}
+.eq{display:inline-flex;gap:3px;align-items:flex-end;height:22px;margin:0 6px}
+.eq span{width:4px;height:6px;border-radius:2px;background:var(--claret);opacity:.35}
+body.on .eq span{opacity:1;animation:eq .9s ease-in-out infinite}
+.eq span:nth-child(2){animation-delay:.15s}.eq span:nth-child(3){animation-delay:.3s}.eq span:nth-child(4){animation-delay:.45s}
+@keyframes eq{0%,100%{height:5px}50%{height:22px}}
 .sel{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
 .sel label{font-size:13px;color:var(--mute);display:flex;flex-direction:column;gap:2px}
 #voice{max-width:240px}
-.bar{height:8px;background:var(--soft);border-radius:99px;margin:14px 0 6px;overflow:hidden;border:1px solid var(--line)}
-.bar i{display:block;height:100%;width:0;background:var(--claret);transition:width .3s}
+.bar{height:8px;background:var(--soft);border-radius:99px;margin:14px 0 6px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--claret));border-radius:99px;transition:width .3s}
 .info{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px;font-size:14px;color:var(--mute)}
 .info strong{color:var(--ink);white-space:nowrap}
 .status{font-size:14px;color:var(--claret);margin:8px 0 0;min-height:1.2em}
-.page{margin-top:16px;font-size:18px;line-height:1.75}
-.page h2{font-size:14px;color:var(--claret);margin:0 0 10px;font-weight:600}
-.page p{margin:0 0 14px;max-width:68ch}
+.page{margin-top:20px;font:19px/1.8 "Literata",Georgia,serif;padding:clamp(22px,5vw,56px);position:relative;
+  background:linear-gradient(90deg,transparent 0,transparent calc(clamp(22px,5vw,56px) - 14px),light-dark(rgba(153,15,61,.18),rgba(255,122,163,.18)) calc(clamp(22px,5vw,56px) - 14px),transparent calc(clamp(22px,5vw,56px) - 13px)),var(--card)}
+.page h2{font:600 14px/1.4 "Libre Franklin",sans-serif;color:var(--claret);margin:0 0 14px;letter-spacing:.02em}
+.page p{margin:0 0 16px;max-width:66ch}
 .s{cursor:pointer;border-radius:4px;transition:background .15s}
 .s:hover{background:var(--soft)}
 .s.now{background:var(--hi);box-shadow:0 0 0 3px var(--hi)}
-@media(prefers-reduced-motion:reduce){.s,.bar i{transition:none}}
-.empty{color:var(--mute)}
-.empty h2{color:var(--ink);font-size:21px;margin:0 0 8px}
-.empty ul{margin:8px 0 0;padding-inline-start:20px}
-.tip{font-size:13px;color:var(--mute);margin:10px 0 0}
-footer{font-size:13px;color:var(--mute)}
-footer a{color:var(--teal)}
-@media(max-width:600px){.sel{margin-left:0;width:100%}.sel label{flex:1}#voice{max-width:none}.page{font-size:17px}}
+.empty{color:var(--mute);font-family:"Libre Franklin",sans-serif;font-size:16px}
+.empty h2{color:var(--ink);font-size:22px;margin:0 0 12px;font-weight:800}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:0;padding:0;list-style:none}
+.steps li{background:var(--soft);border-radius:14px;padding:14px 16px;line-height:1.45}
+.steps b{display:block;color:var(--ink);margin-bottom:2px}
+.tip{font-size:13px;color:var(--mute);margin:14px 0 0}
+footer{font-size:13px;color:rgba(255,255,255,.75);background:var(--deep);margin-top:40px}
+footer a{color:var(--peach)}
+@media(max-width:600px){.row{flex-wrap:nowrap;gap:6px}.row .ico{width:44px;flex:none}.play{flex:1;min-width:0}.eq{display:none}.player .row{flex-wrap:wrap}.player .row>.sel{order:2}.sel{margin-left:0;width:100%}.sel label{flex:1}#voice{max-width:none}.page{font-size:17px}}
 </style>
 </head>
 <body>
-<header class="band"><div class="wrap">
-  <h1>PDF Read Aloud</h1>
-  <p class="lede">Upload a PDF and it reads the whole document to you, from start to finish, at a normal speaking pace. Sit back and listen.</p>
+<header class="hero"><div class="wrap">
+  <div>
+    <span class="kicker"><i></i>Free · Private · No sign-up</span>
+    <h1>Let your PDFs read themselves to you</h1>
+    <p class="lede">Upload a PDF and it reads the whole document aloud, from the first page to the last, at a natural pace. Sit back and listen.</p>
+  </div>
+  <svg class="art" viewBox="0 0 320 300" role="img" aria-label="A document sending sound waves to a pair of headphones">
+    <defs>
+      <linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fffdfb"/><stop offset="1" stop-color="#f6e3da"/></linearGradient>
+      <linearGradient id="hp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb59a"/><stop offset="1" stop-color="#e2557b"/></linearGradient>
+    </defs>
+    <circle class="wave" cx="150" cy="150" r="118" fill="none" stroke="#ffb59a" stroke-width="2"/>
+    <circle class="wave w2" cx="150" cy="150" r="118" fill="none" stroke="#ffb59a" stroke-width="2"/>
+    <circle class="wave w3" cx="150" cy="150" r="118" fill="none" stroke="#ffb59a" stroke-width="2"/>
+    <ellipse cx="128" cy="262" rx="70" ry="10" fill="#000" opacity=".18"/>
+    <g transform="rotate(-6 128 150)">
+      <path d="M78 52h76l26 26v170a6 6 0 0 1-6 6H78a6 6 0 0 1-6-6V58a6 6 0 0 1 6-6z" fill="url(#pg)"/>
+      <path d="M154 52v20a6 6 0 0 0 6 6h20z" fill="#f0cfc2"/>
+      <rect x="88" y="66" width="44" height="7" rx="3.5" fill="#0d7680"/>
+      <g fill="#d9c3ba"><rect x="88" y="96" width="78" height="6" rx="3"/><rect x="88" y="112" width="70" height="6" rx="3"/><rect x="88" y="144" width="74" height="6" rx="3"/><rect x="88" y="160" width="60" height="6" rx="3"/><rect x="88" y="176" width="78" height="6" rx="3"/><rect x="88" y="208" width="66" height="6" rx="3"/><rect x="88" y="224" width="40" height="6" rx="3"/></g>
+      <rect x="84" y="125" width="86" height="12" rx="4" fill="#ffb59a"/>
+      <rect x="88" y="128" width="72" height="6" rx="3" fill="#990f3d"/>
+    </g>
+    <g transform="translate(206 70)">
+      <path d="M8 62a44 44 0 0 1 88 0" fill="none" stroke="url(#hp)" stroke-width="10" stroke-linecap="round"/>
+      <rect x="0" y="58" width="22" height="40" rx="10" fill="url(#hp)"/>
+      <rect x="82" y="58" width="22" height="40" rx="10" fill="url(#hp)"/>
+      <rect x="4" y="64" width="8" height="28" rx="4" fill="#fff" opacity=".35"/>
+    </g>
+    <g fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".9">
+      <path d="M190 150q12 14 0 28"/><path d="M204 140q22 24 0 48" opacity=".7"/>
+    </g>
+  </svg>
 </div></header>
 
 <main class="band" style="padding-top:0"><div class="wrap">
@@ -81,6 +145,7 @@ footer a{color:var(--teal)}
       <rect x="9" y="37" width="32" height="6" rx="3" fill="var(--claret)" opacity=".35"/>
     </svg>
     <div><b id="dropTitle">Choose a PDF or drop it here</b><span>Reading starts automatically. Your file stays on your device.</span></div>
+    <span class="cta" aria-hidden="true">Choose PDF</span>
   </label>
 
   <section class="card player" id="player" aria-label="Player">
@@ -88,6 +153,7 @@ footer a{color:var(--teal)}
       <button class="ico" id="prevPage" title="Previous page" aria-label="Previous page" disabled><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
       <button class="ico" id="back" title="Back one sentence" aria-label="Back one sentence" disabled><svg viewBox="0 0 24 24"><path d="M11 6v12L3 12zM21 6v12l-8-6z"/></svg></button>
       <button class="play" id="play" disabled>Play</button>
+      <span class="eq" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
       <button class="ico" id="fwd" title="Skip one sentence" aria-label="Skip one sentence" disabled><svg viewBox="0 0 24 24"><path d="M13 6v12l8-6zM3 6v12l8-6z"/></svg></button>
       <button class="ico" id="nextPage" title="Next page" aria-label="Next page" disabled><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
       <div class="sel">
@@ -111,12 +177,11 @@ footer a{color:var(--teal)}
   <article class="card page" id="page" aria-live="off">
     <div class="empty">
       <h2>How it works</h2>
-      <ul>
-        <li>Choose a PDF. It begins reading aloud straight away and keeps going to the last page.</li>
-        <li>The sentence being read is highlighted, and the page follows along.</li>
-        <li>Click any sentence to start reading from there. Press the space bar to pause or play.</li>
-        <li>Close the tab and come back later: it remembers where you stopped.</li>
-        <li>Scanned PDFs work too. Text is recognized page by page, which takes a few seconds per page.</li>
+      <ul class="steps">
+        <li><b>1. Choose a PDF</b>Reading begins straight away and continues to the last page.</li>
+        <li><b>2. Follow along</b>The sentence being read is highlighted and the page scrolls with it.</li>
+        <li><b>3. Take control</b>Click any sentence to start there. Space bar pauses and plays.</li>
+        <li><b>4. Come back later</b>It remembers where you stopped. Scanned PDFs work too.</li>
       </ul>
     </div>
   </article>
@@ -317,7 +382,7 @@ async function nextSentence(){
   pg++; si = 0; await showPage(); speak();
 }
 function finish(){
-  playing = false; token++; $('#play').textContent = 'Play again';
+  playing = false; document.body.classList.remove('on'); token++; $('#play').textContent = 'Play again';
   $('#fill').style.width = '100%'; $('#left').textContent = '';
   status('Finished reading the document.');
   pg = 0; si = 0; try { localStorage.removeItem(fileKey); } catch(e){}
@@ -325,18 +390,18 @@ function finish(){
 function play(){
   if (!synth || !pages.length) return;
   if ($('#play').textContent === 'Play again'){ pg = 0; si = 0; showPage(); }
-  playing = true; $('#play').textContent = 'Pause';
+  playing = true; document.body.classList.add('on'); $('#play').textContent = 'Pause';
   if (!/Picking up/.test($('#status').textContent)) status('');
   synth.cancel(); speak();
 }
-function pause(){ playing = false; token++; synth && synth.cancel(); $('#play').textContent = 'Play'; status('Paused.'); }
-function stop(){ playing = false; token++; synth && synth.cancel(); $('#play').textContent = 'Play'; }
+function pause(){ playing = false; document.body.classList.remove('on'); token++; synth && synth.cancel(); $('#play').textContent = 'Play'; status('Paused.'); }
+function stop(){ playing = false; document.body.classList.remove('on'); token++; synth && synth.cancel(); $('#play').textContent = 'Play'; }
 function restart(){ token++; synth.cancel(); setTimeout(speak, 60); }
 async function jump(newPg, newSi){
   const wasPlaying = playing; token++; synth && synth.cancel();
   if (newPg !== pg){ pg = newPg; si = 0; await showPage(); }
   si = Math.max(0, Math.min(newSi, Math.max(0, flat(pg).length - 1))); mark();
-  if (wasPlaying){ playing = true; speak(); }
+  if (wasPlaying){ playing = true; document.body.classList.add('on'); speak(); }
 }
 
 $('#play').addEventListener('click', () => { playing ? pause() : play(); });
